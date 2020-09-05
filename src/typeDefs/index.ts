@@ -3,8 +3,9 @@ import { gql } from 'apollo-server-express';
 import userTypeDefs from './user';
 import recipeTypeDefs from './recipe';
 import categoryTypeDefs from './category';
+import { DocumentNode } from 'graphql';
 
-const typeDefs = gql`
+const typeDefs: DocumentNode = gql`
   type Query {
     _: String
   }

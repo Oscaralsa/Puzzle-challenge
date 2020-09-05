@@ -19,12 +19,15 @@ export class RecipeEntity {
   @Column({ name: "ingredients", length: 1000, nullable: false })
   ingredients!: string;
 
+  @Column({ name: "id_category", nullable: false })
+  id_category!: number;
+
   @ManyToOne(() => CategoryEntity, (category: CategoryEntity) => category.recipe)
   @JoinColumn({ name: "id_category" })
   category!: CategoryEntity;
 
   @OneToMany(() => User_RecipeEntity, (user_recipe: User_RecipeEntity) => user_recipe.id_recipe, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
-  recipe!: Array<User_RecipeEntity>;
+  user_recipe!: Array<User_RecipeEntity>;
 
   user!: UserEntity;
 }

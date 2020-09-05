@@ -1,11 +1,11 @@
 import bcrypt from 'bcrypt';
 import { AuthenticationError } from 'apollo-server-express';
 import { merge } from 'lodash';
-import { getConnection } from 'typeorm';
+import { getConnection, Repository } from 'typeorm';
 
+import helpers from "../../helper/helpers"
 import { UserEntity } from "../../database/entity/user.entity";
 import { RecipeEntity } from "../../database/entity/recipe.entity";
-import configDB from "../../database/config";
 import jwt from "../../services/jwt";
 import middleware from "../../resolvers/middleware";
 import PubSub from "../../subscription";
@@ -15,15 +15,16 @@ import Events from "../../subscription/events";
 const { userEvents } = Events;
 const { isAuthenticated } = middleware;
 const { createAccessToken, createRefreshToken } = jwt;
+const { getResult } = helpers;
 
 export = {
   Query: {
-    user: merge(async (_: any, { id }: { id: number }) => {
+    getOneUser: merge(async (_: any, { id }: { id: number }) => {
       try {
-        const db = await configDB;
         //Create user repository
-        let userRepository = db.getRepository(UserEntity);
-        const user = await userRepository.findOne({ id });
+        let userRepository: Repository<UserEntity> = getConnection().getRepository(UserEntity);
+        const users: UserEntity[] = await userRepository.find({ where: { id }, take:1 });
+        const user: UserEntity = getResult(users);
 
         if (!user) {
           throw new Error("User not found");
@@ -36,13 +37,12 @@ export = {
       }
 
     }, isAuthenticated),
-    myUser: merge(async (_: any, __: any, { email }: { email: string }) => {
+    getMyUser: merge(async (_: any, __: any, { email }: { email: string }) => {
       try {
-        //isAuthenticated
-        const db = await configDB;
         //Create user repository
-        let userRepository = db.getRepository(UserEntity);
-        const user: UserEntity = await userRepository.findOne({ email: email });
+        let userRepository: Repository<UserEntity> = getConnection().getRepository(UserEntity);
+        const users: UserEntity[] = await userRepository.find({ where: { email }, take:1 });
+        const user: UserEntity = getResult(users);
 
         if (!user) {
           throw new Error("User not found");
@@ -60,12 +60,12 @@ export = {
   Mutation: {
     signup: async (_: any, { input }: { input: any }) => {
       try {
-        const db = await configDB;
         //Create user repository
-        let userRepository = db.getRepository(UserEntity);
+        let userRepository: Repository<UserEntity> = getConnection().getRepository(UserEntity);
 
         //Check if user is already registered
-        const user = await userRepository.findOne({ email: input.email })
+        const users: UserEntity[] = await userRepository.find({ where: { email: input.email }, take: 1 })
+        const user: UserEntity = getResult(users);
 
         if (user) {
           throw new Error("Email already in use")
@@ -75,7 +75,7 @@ export = {
         let hashedPassword: string = await bcrypt.hash(input.password, 10)
 
         //Create a new user
-        let newUser = new UserEntity();
+        let newUser: UserEntity = new UserEntity();
         newUser.name = input.name;
         newUser.email = input.email;
         newUser.password = hashedPassword;
@@ -95,11 +95,11 @@ export = {
     login: async (_: any, { input }: { input: any }) => {
       try {
 
-        const db: any = await configDB;
         //Create user repository
-        let userRepository: any = db.getRepository(UserEntity);
+        let userRepository: Repository<UserEntity> = getConnection().getRepository(UserEntity);
 
-        const user = await userRepository.findOne({ email: input.email })
+        const users: UserEntity[] = await userRepository.find({ where: { email: input.email }, take: 1 })
+        const user: UserEntity = getResult(users);
 
         if (!user) {
           throw new AuthenticationError("User not found")
@@ -129,17 +129,16 @@ export = {
   User: {
     recipes: async ({ id }: { id: number }) => {
       try {
-        const db = await configDB;
         //Create user repository
         let taskRepository = getConnection().getRepository(RecipeEntity);
-        let userRepository = db.getRepository(UserEntity);
+        //let userRepository = db.getRepository(UserEntity);
 
-        const user: UserEntity = await userRepository.findOne({ id });
+        //const user: UserEntity = await userRepository.findOne({ id });
 
         //const task = await taskRepository.find({ user: user });
 
         //return task;
-        return user;
+        return "user";
       } catch (err) {
         throw new Error(err)
       }

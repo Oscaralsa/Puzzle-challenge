@@ -1,13 +1,14 @@
 import { merge } from 'lodash';
 
 import middleware from ".././middleware";
-import configDB from "../../database/config";
 import { RecipeEntity } from "../../database/entity/recipe.entity";
 import { CategoryEntity } from "../../database/entity/category.entity";
-import { getConnection } from 'typeorm';
+import { getConnection, Repository } from 'typeorm';
+import helpers from "../../helper/helpers"
 
 //Destructurins
 const { isAuthenticated } = middleware;
+const { getResult } = helpers;
 
 export = {
   Query: {
@@ -16,7 +17,7 @@ export = {
         let cursor: number =  (page * limit) - limit;
         if (!cursor) cursor = 0;
         //Create category repository
-        let categoryRepository = getConnection().getRepository(CategoryEntity);
+        let categoryRepository: Repository<CategoryEntity> = getConnection().getRepository(CategoryEntity);
         let category: CategoryEntity[] = await categoryRepository.createQueryBuilder("category").skip(cursor).take(limit).getMany();
 
         return category;
@@ -32,9 +33,7 @@ export = {
         //Create category repository
         let categoryRepository = getConnection().getRepository(CategoryEntity);
 
-        let category = await categoryRepository.findOne({ id });
-
-        return category;
+        return await categoryRepository.findOne({ id });
       } catch (err) {
         throw new Error(err)
       }
@@ -44,12 +43,11 @@ export = {
   Mutation: {
     createCategory: merge(async (_: any, { input }: { input: any }) => {
       try {
-        console.log(input)
         //Create category repository
-        let categoryRepository = getConnection().getRepository(CategoryEntity);
+        let categoryRepository: Repository<CategoryEntity> = getConnection().getRepository(CategoryEntity);
 
         //Create category
-        let category = new CategoryEntity();
+        let category: CategoryEntity = new CategoryEntity();
         category.name = input.name;
 
         //Update category
@@ -65,16 +63,16 @@ export = {
 
     updateCategory: merge(async (_: any, { id, input }: { id: number, input: any }) => {
       try {
-        const db = await configDB;
         //Create category repository
-        let categoryRepository = db.getRepository(CategoryEntity);
+        let categoryRepository: Repository<CategoryEntity> = getConnection().getRepository(CategoryEntity);
 
         //Search category
-        const categoryToUpdate: CategoryEntity = await categoryRepository.findOne({ id });
-        categoryToUpdate.name = input.name || categoryToUpdate.name;
+        const category: CategoryEntity[] = await categoryRepository.find({ where: { id }, take: 1 });
+        const categoryToUpdate: CategoryEntity = getResult(category)
+        categoryToUpdate.name = input.name;
 
         //Update category
-        const Category = await categoryRepository.save(categoryToUpdate);
+        const Category: CategoryEntity = await categoryRepository.save(categoryToUpdate);
 
         
         return Category;
@@ -87,19 +85,18 @@ export = {
 
     deleteCategory: merge(async (_: any, { id }: { id: number }) => {
       try {
-        const db = await configDB;
         //Create user repository
-        let categoryRepository = db.getRepository(CategoryEntity);
+        let categoryRepository = getConnection().getRepository(CategoryEntity);
 
         //Search user
-        const categoryToRemove: CategoryEntity = await categoryRepository.findOne({ id });
-        const categoryRemoved: CategoryEntity = categoryToRemove;
+        const category: CategoryEntity[] = await categoryRepository.find({ where: { id }, take: 1 });
+        const categoryToRemove: CategoryEntity = getResult(category);
 
         //Delete task
         await categoryRepository.remove(categoryToRemove);
-        categoryRemoved.id = id;
+        categoryToRemove.id = id;
 
-        return categoryRemoved;
+        return categoryToRemove;
 
       } catch (err) {
         throw new Error(err)

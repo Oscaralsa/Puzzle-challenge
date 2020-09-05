@@ -6,8 +6,8 @@ import configDB from "../../database/config";
 import { getConnection } from 'typeorm';
 
 
+
 const isAuthenticated = (_: any, __: any, { email }: { email: String }) => {
-  console.log("Hola de autenticado")
   if (!email) {
     throw new Error("Access denied.")
   }
@@ -15,7 +15,7 @@ const isAuthenticated = (_: any, __: any, { email }: { email: String }) => {
 }
 
 
-const isAuthorized = (_: any, { id }: { id: any }, { loggedInUserId, email }: {loggedInUserId: number, email:any}) => {
+/*const isAuthorized = (_: any, { id }: { id: any }, { loggedInUserId, email }: {loggedInUserId: number, email:any}) => {
   try {
 
     console.log("Funciona", id)
@@ -35,5 +35,6 @@ const isAuthorized = (_: any, { id }: { id: any }, { loggedInUserId, email }: {l
     throw new Error(err);
   }
 }
+*/
 
-export = { isAuthenticated, isAuthorized }
+export = { isAuthenticated }
