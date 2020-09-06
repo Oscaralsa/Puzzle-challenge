@@ -2,7 +2,7 @@
   "name": "puzzle-challenge",
   "version": "1.0.0",
   "description": "An application in NodeJS and Typescrypt that includes a GraphQL API and Apollo",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "start": "tsc && node dist/bin/www.js",
     "dev": "tsc && nodemon dist/bin/www.js",
