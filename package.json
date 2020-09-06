@@ -4,6 +4,7 @@
   "description": "An application in NodeJS and Typescrypt that includes a GraphQL API and Apollo",
   "main": "app.js",
   "scripts": {
+    "build": "rimraf ./dist && tsc",
     "start": "tsc && node dist/bin/www.js",
     "dev": "tsc && nodemon dist/bin/www.js",
     "deploy": "tsc && serverless deploy",
