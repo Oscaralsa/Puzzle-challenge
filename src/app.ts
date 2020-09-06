@@ -45,5 +45,7 @@ export const apolloServer = new ApolloServer({
     return {
       message: err.message
     };
-  }
+  },
+  introspection: true,
+  playground: true,
 })

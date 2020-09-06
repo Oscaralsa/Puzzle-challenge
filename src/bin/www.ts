@@ -3,7 +3,6 @@ import cors from 'cors';
 
 import {apolloServer, app} from "../app";
 import { Server } from "http";
-import { ApolloServer } from "apollo-server-express";
 
 // body-parser middleware
 app.use(express.json());
@@ -12,8 +11,7 @@ app.use('*', cors());
 const PORT: number = + process.env.PORT!;
 const port: number = PORT || 3000;
 
-if (apolloServer instanceof ApolloServer)
-  apolloServer.applyMiddleware({ app, path: '/graphql' })
+apolloServer.applyMiddleware({ app, path: '/graphql' })
 
 const httpServer: Server = app.listen(port, err => {
   if (err) {
