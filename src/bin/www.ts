@@ -9,7 +9,7 @@ import { ApolloServer } from "apollo-server-express";
 app.use(express.json());
 //cors
 app.use('*', cors());
-const port: number = 3000;
+const port: number = process.env.PORT || 3000;
 
 if (apolloServer instanceof ApolloServer)
   apolloServer.applyMiddleware({ app, path: '/graphql' })
