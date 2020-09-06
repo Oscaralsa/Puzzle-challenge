@@ -1,3 +1,2 @@
-import helpers from "./helpers";
-
-export = helpers;
+import { getResult } from "./helpers";
+export = getResult;

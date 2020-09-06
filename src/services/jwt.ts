@@ -3,7 +3,7 @@ import moment from 'moment';
 
 import { UserEntity } from "../database/entity/user.entity";
 
-interface Payload {
+export interface Payload {
   id: number;
   email: string;
   name: string;
@@ -20,7 +20,7 @@ const SECRET_KEY: string = process.env.SECRET_KEY!;
  * 
  * @return {string} The json web token
  */
-function createAccessToken(user: UserEntity): string {
+export function createAccessToken(user: UserEntity): string {
   const payload: Object = {
     id: user.id,
     name: user.name,
@@ -39,7 +39,7 @@ function createAccessToken(user: UserEntity): string {
  * 
  * @return {string} The json web token
  */
-function createRefreshToken(user: UserEntity): string {
+export function createRefreshToken(user: UserEntity): string {
   const payload: Object = {
     id: user.id,
     exp: moment().add(30, "days").unix()
@@ -55,8 +55,7 @@ function createRefreshToken(user: UserEntity): string {
  * 
  * @return {Payload} The json web token decoded.
  */
-function decodeToken(token: string): Payload {
+export function decodeToken(token: string): Payload {
   return jwt.decode(token, SECRET_KEY, true)
 }
 
-export = { createAccessToken, createRefreshToken, decodeToken }

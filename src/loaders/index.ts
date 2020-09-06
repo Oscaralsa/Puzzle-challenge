@@ -1,3 +1,3 @@
-import { batchUser } from "./user";
+import { batchCategory } from "./category";
 
-export = { batchUser };
+export = { batchCategory };

@@ -1,17 +1,20 @@
 import { skip } from 'graphql-resolvers';
 
-import { RecipeEntity } from "../../database/entity/recipe.entity";
-import { UserEntity } from "../../database/entity/user.entity";
-import configDB from "../../database/config";
+import { RecipeEntity } from "../database/entity/recipe.entity";
+import { UserEntity } from "../database/entity/user.entity";
 import { getConnection } from 'typeorm';
 
 
-
-const isAuthenticated = (_: any, __: any, { email }: { email: String }) => {
-  if (!email) {
-    throw new Error("Access denied.")
+export const isAuthenticated = (context: any) => {
+  try {
+    if (!context.email) {
+      throw new Error("Access denied.")
+    }
+    return skip;
+  } catch (err) {
+    throw new Error(err)
   }
-  return skip;
+  
 }
 
 
@@ -36,5 +39,3 @@ const isAuthenticated = (_: any, __: any, { email }: { email: String }) => {
   }
 }
 */
-
-export = { isAuthenticated }

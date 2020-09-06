@@ -1,15 +1,4 @@
-import jwt from "../../services/jwt"
-
-//Destructuring
-const { decodeToken } = jwt;
-
-interface Payload {
-  id: number;
-  email: string;
-  name: string;
-  createToken: number;
-  exp: number;
-}
+import { decodeToken, Payload } from "../../services/jwt"
 
 const verifyUser = async (req: any) => {
   try {

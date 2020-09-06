@@ -1,26 +1,23 @@
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { AuthenticationError } from 'apollo-server-express';
-import { merge } from 'lodash';
 import { getConnection, Repository } from 'typeorm';
 
-import helpers from "../../helper/helpers"
+import { getResult } from "../../helper/helpers/helpers";
 import { UserEntity } from "../../database/entity/user.entity";
 import { RecipeEntity } from "../../database/entity/recipe.entity";
-import jwt from "../../services/jwt";
-import middleware from "../../resolvers/middleware";
+import { createAccessToken, createRefreshToken } from "../../services/jwt";
+import { isAuthenticated } from "../../middleware";
 import PubSub from "../../subscription";
-import Events from "../../subscription/events";
-
-//Destructuring
-const { userEvents } = Events;
-const { isAuthenticated } = middleware;
-const { createAccessToken, createRefreshToken } = jwt;
-const { getResult } = helpers;
+import { userEvents } from "../../subscription/events/user";
+import { Context } from '../../types/interface';
 
 export = {
   Query: {
-    getOneUser: merge(async (_: any, { id }: { id: number }) => {
+    getOneUser:  async (_: any, { id }: { id: number }, context: Context) => {
       try {
+        //Middlewares
+        isAuthenticated(context);
+
         //Create user repository
         let userRepository: Repository<UserEntity> = getConnection().getRepository(UserEntity);
         const users: UserEntity[] = await userRepository.find({ where: { id }, take:1 });
@@ -36,9 +33,15 @@ export = {
         throw new Error(err)
       }
 
-    }, isAuthenticated),
-    getMyUser: merge(async (_: any, __: any, { email }: { email: string }) => {
+    },
+    getMyUser: async (_: any, __: any, context: Context) => {
       try {
+        //Middlewares
+        isAuthenticated(context);
+
+        //Destructuring
+        const { email } = context;
+        
         //Create user repository
         let userRepository: Repository<UserEntity> = getConnection().getRepository(UserEntity);
         const users: UserEntity[] = await userRepository.find({ where: { email }, take:1 });
@@ -55,7 +58,7 @@ export = {
         throw new Error(err)
       }
 
-    }, isAuthenticated),
+    },
   },
   Mutation: {
     signup: async (_: any, { input }: { input: any }) => {
@@ -130,15 +133,14 @@ export = {
     recipes: async ({ id }: { id: number }) => {
       try {
         //Create user repository
-        let taskRepository = getConnection().getRepository(RecipeEntity);
-        //let userRepository = db.getRepository(UserEntity);
+        let recipeRepository: Repository<RecipeEntity> = getConnection().getRepository(RecipeEntity);
+        let userRepository: Repository<UserEntity> = getConnection().getRepository(UserEntity);
 
-        //const user: UserEntity = await userRepository.findOne({ id });
+        const user: UserEntity[] = await userRepository.find({ where: { id }, take: 1 });
 
-        //const task = await taskRepository.find({ user: user });
+        const recipe = await recipeRepository.find({ user: getResult(user) });
 
-        //return task;
-        return "user";
+        return recipe;
       } catch (err) {
         throw new Error(err)
       }

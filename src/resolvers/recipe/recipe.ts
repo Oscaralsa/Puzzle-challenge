@@ -1,22 +1,22 @@
-import { merge } from 'lodash';
-import { composeResolvers } from '@graphql-tools/resolvers-composition'
+import { IResolvers } from 'apollo-server-express';
 
-import middleware from ".././middleware";
-import helpers from "../../helper/helpers"
+import { isAuthenticated } from "../../middleware";
+import { getResult } from "../../helper/helpers/helpers";
 import { RecipeEntity } from "../../database/entity/recipe.entity";
 import { UserEntity } from "../../database/entity/user.entity";
 import { getConnection, Repository } from 'typeorm';
 import { User_RecipeEntity } from '../../database/entity/user_recipe.entity';
 import { CategoryEntity } from '../../database/entity/category.entity';
-import { IResolvers } from 'apollo-server-express';
-//Destructurins
-const { isAuthenticated } = middleware;
-const { getResult } = helpers;
+import { Context } from '../../types/interface';
 
 const resolvers: IResolvers = {
   Query: {
-    getRecipes: composeResolvers(async (_: any, { page, limit }: { page: number, limit: number }) => {
+    getRecipes: async (_: any, { page, limit }: { page: number, limit: number }, context: Context) => {
       try {
+        //Middlewares
+        isAuthenticated(context);
+
+        //Define cursor
         let cursor: number = (page * limit) - limit;
         if (!cursor) cursor = 0;
         //Create user repository
@@ -30,10 +30,16 @@ const resolvers: IResolvers = {
         throw new Error(err);
       }
 
-    }),
+    },
 
-    getMyRecipes: async (_: any, { page, limit }: { page: number, limit: number }, { loggedInUserId }: { loggedInUserId: string }) => {
+    getMyRecipes: async (_: any, { page, limit }: { page: number, limit: number }, context: Context) => {
       try {
+        //Middlewares
+        isAuthenticated(context);
+        //Destructuring
+        const { loggedInUserId } = context;
+
+        //Define cursor
         let cursor: number = (page * limit) - limit;
         if (!cursor) cursor = 0;
 
@@ -50,8 +56,11 @@ const resolvers: IResolvers = {
 
     },
 
-    getOneRecipe: merge(async (_: any, { id }: { id: number }) => {
+    getOneRecipe: async (_: any, { id }: { id: number }, context: Context) => {
       try {
+        //Middlewares
+        isAuthenticated(context);
+
         //Create user repository
         let recipeRepository: Repository<RecipeEntity> = getConnection().getRepository(RecipeEntity);
 
@@ -60,11 +69,14 @@ const resolvers: IResolvers = {
         throw new Error(err)
       }
 
-    }, isAuthenticated),
+    },
   },
   Mutation: {
-    createRecipe: merge(async (_: any, { input }: { input: any }) => {
+    createRecipe: async (_: any, { input }: { input: any }, context: Context) => {
       try {
+        //Middlewares
+        isAuthenticated(context);
+
         //Create repositories
         let recipeRepository: Repository<RecipeEntity> = getConnection().getRepository(RecipeEntity);
         let categoryRepository: Repository<CategoryEntity> = getConnection().getRepository(CategoryEntity);
@@ -100,10 +112,13 @@ const resolvers: IResolvers = {
         throw new Error(err)
       }
 
-    }, isAuthenticated),
+    },
 
-    updateRecipe: merge(async (_: any, { id, input }: { id: number, input: any }) => {
+    updateRecipe: async (_: any, { id, input }: { id: number, input: any }, context: Context) => {
       try {
+        //Middlewares
+        isAuthenticated(context);
+
         //Create user repository
         let recipeRepository: Repository<RecipeEntity> = getConnection().getRepository(RecipeEntity);
 
@@ -128,10 +143,13 @@ const resolvers: IResolvers = {
         throw new Error(err)
       }
 
-    }, isAuthenticated),
+    },
 
-    deleteRecipe: merge(async (_: any, { id }: { id: number }) => {
+    deleteRecipe: async (_: any, { id }: { id: number }, context: Context) => {
       try {
+        //Middlewares
+        isAuthenticated(context);
+
         //Create user repository
         let recipeRepository: Repository<RecipeEntity> = getConnection().getRepository(RecipeEntity);
         let user_recipeRepository: Repository<User_RecipeEntity> = getConnection().getRepository(User_RecipeEntity);
@@ -152,7 +170,7 @@ const resolvers: IResolvers = {
         throw new Error(err)
       }
 
-    }, isAuthenticated)
+    }
   },
   Recipe: {
 
@@ -166,6 +184,7 @@ const resolvers: IResolvers = {
             .innerJoin(RecipeEntity, "recipe", "user_recipe.id_recipe = recipe.id").select("user").where(`recipe.id = ${parent.id}`).getMany();
 
           return user;
+
         }
 
       } catch (err) {
@@ -174,9 +193,10 @@ const resolvers: IResolvers = {
     },
     category: async (parent: any, __: any, { loaders }: { loaders: any }) => {
       try {
-        let category = await getConnection().createQueryBuilder(CategoryEntity, "category").innerJoin("category.recipe", "recipe")
-          .where(`recipe.id = ${parent.id}`).getOne();
+        let categoryIds: CategoryEntity[] = await getConnection().createQueryBuilder(CategoryEntity, "category").innerJoin(RecipeEntity, "recipe", "category.id = recipe.id_category")
+          .select("category").where(`recipe.id = ${parent.id}`).getMany();
 
+        const category = await loaders.category.load(categoryIds[0].id);
         return category;
       } catch (err) {
         throw new Error(err);
@@ -184,4 +204,5 @@ const resolvers: IResolvers = {
     }
   }
 }
+
 export = resolvers
