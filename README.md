@@ -1,4 +1,4 @@
-# Puzzle-challenge
+# [Puzzle challenge](https://puzzle-challenge-oscar.herokuapp.com/graphql)
 Graphql API for puzzle challenge developed with Typescript, Node, GraphQL, PostgreSQL, Apollo and typeORM.
 
 ## Table of contents
