@@ -6,6 +6,7 @@ Graphql API for puzzle challenge developed with Typescript, Node, GraphQL, Postg
 -   [Installation](#installation)
     -   [Prerequisites](#Prerequisites)
     -   [Development](#Development)
+-   [Demo](#Demo)
 
 ## Installation
 
@@ -40,3 +41,9 @@ technology, you must use the terminal to run the node application.
 npm install
 npm run start
 ```
+
+## Demo
+
+[<img src="https://firebasestorage.googleapis.com/v0/b/cargox-4d7ef.appspot.com/o/Demo.png?alt=media&token=2ec1d4ae-20c2-454b-b001-7fa3846bcd2a"/>](https://puzzle-challenge-oscar.herokuapp.com/graphql)
+
+You can find the API demo at https://puzzle-challenge-oscar.herokuapp.com/graphql
