@@ -36,4 +36,10 @@ export = gql`
     category: Category!
     user: [User!]
   }
+
+  extend type Subscription {
+    recipeCreated: Recipe
+    recipeUpdated: Recipe
+    recipeDeleted: Recipe
+  }
 `;

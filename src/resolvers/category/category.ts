@@ -1,10 +1,12 @@
 import { getConnection, Repository } from 'typeorm';
 
 import { isAuthenticated } from "../../middleware";
+import PubSub from "../../subscription";
 import { RecipeEntity } from "../../database/entity/recipe.entity";
 import { CategoryEntity } from "../../database/entity/category.entity";
 import { getResult } from "../../helper/helpers/helpers";
 import { Context } from '../../types/interface';
+import { categoryEvents } from "../../subscription/events/category";
 
 export = {
   Query: {
@@ -116,6 +118,17 @@ export = {
       }
 
     },
+  },
+  Subscription: {
+    categoryCreated: {
+      subscribe: () => PubSub.asyncIterator(categoryEvents.CATEGORY_CREATED)
+    },
+    categoryUpdated: {
+      subscribe: () => PubSub.asyncIterator(categoryEvents.CATEGORY_UPDATED)
+    },
+    categoryDeleted: {
+      subscribe: () => PubSub.asyncIterator(categoryEvents.CATEGORY_DELETED)
+    }
   },
   Category: {
     recipe: async (parent: any, __: any, { loaders }: { loaders: any }) => {

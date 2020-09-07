@@ -1,13 +1,15 @@
 import { IResolvers } from 'apollo-server-express';
+import { getConnection, Repository } from 'typeorm';
 
 import { isAuthenticated } from "../../middleware";
 import { getResult } from "../../helper/helpers/helpers";
 import { RecipeEntity } from "../../database/entity/recipe.entity";
 import { UserEntity } from "../../database/entity/user.entity";
-import { getConnection, Repository } from 'typeorm';
+import PubSub from "../../subscription";
 import { User_RecipeEntity } from '../../database/entity/user_recipe.entity';
 import { CategoryEntity } from '../../database/entity/category.entity';
 import { Context } from '../../types/interface';
+import { recipeEvents } from "../../subscription/events/recipe";
 
 const resolvers: IResolvers = {
   Query: {
@@ -170,6 +172,17 @@ const resolvers: IResolvers = {
         throw new Error(err)
       }
 
+    }
+  },
+  Subscription: {
+    recipeCreated: {
+      subscribe: () => PubSub.asyncIterator(recipeEvents.RECIPE_CREATED)
+    },
+    recipeUpdated: {
+      subscribe: () => PubSub.asyncIterator(recipeEvents.RECIPE_UPDATED)
+    },
+    recipeDeleted: {
+      subscribe: () => PubSub.asyncIterator(recipeEvents.RECIPE_DELETED)
     }
   },
   Recipe: {

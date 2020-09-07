@@ -5,11 +5,12 @@ import { getConnection, Repository } from 'typeorm';
 import { getResult } from "../../helper/helpers/helpers";
 import { UserEntity } from "../../database/entity/user.entity";
 import { RecipeEntity } from "../../database/entity/recipe.entity";
-import { createAccessToken, createRefreshToken } from "../../services/jwt";
+import { createAccessToken, createRefreshToken } from "../../services/jwtService";
 import { isAuthenticated } from "../../middleware";
 import PubSub from "../../subscription";
 import { userEvents } from "../../subscription/events/user";
 import { Context } from '../../types/interface';
+import { registerEmail } from "../../services/emailService";
 
 export = {
   Query: {
@@ -88,6 +89,8 @@ export = {
         PubSub.publish(userEvents.USER_CREATED, {
           userCreated: result
         });
+
+        registerEmail(newUser);
         
         return result;
 

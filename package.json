@@ -4,7 +4,6 @@
   "description": "An application in NodeJS and Typescrypt that includes a GraphQL API and Apollo",
   "main": "app.js",
   "scripts": {
-    "build": "rimraf ./dist && tsc",
     "start": "tsc && node dist/bin/www.js",
     "dev": "tsc && nodemon dist/bin/www.js",
     "deploy": "tsc && serverless deploy",
@@ -19,6 +18,7 @@
     "@types/graphql": "^14.5.0",
     "@types/graphql-resolvers": "^0.3.0",
     "@types/lodash": "^4.14.160",
+    "@types/nodemailer": "^6.4.0",
     "@types/pg": "^7.14.4",
     "@types/uuid": "^8.3.0",
     "apollo-server-express": "^2.9.3",
@@ -31,6 +31,7 @@
     "graphql-resolvers": "^0.4.2",
     "jwt-simple": "^0.5.6",
     "moment": "^2.27.0",
+    "nodemailer": "^6.4.11",
     "nodemon": "^2.0.4",
     "pg": "^8.3.2",
     "reflect-metadata": "^0.1.13",

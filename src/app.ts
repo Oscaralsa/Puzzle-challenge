@@ -18,7 +18,6 @@ connectionDB;
 
 export const app = express();
 
-
 export const apolloServer = new ApolloServer({
   typeDefs,
   resolvers,

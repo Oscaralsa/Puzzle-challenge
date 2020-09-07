@@ -25,4 +25,10 @@ export = gql`
     name: String!
     recipe: Recipe!
   }
+
+  extend type Subscription {
+    categoryCreated: Category
+    categoryUpdated: Category
+    categoryDeleted: Category
+  }
 `;
