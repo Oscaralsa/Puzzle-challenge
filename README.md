@@ -6,7 +6,6 @@ Graphql API for puzzle challenge developed with Typescript, Node, GraphQL, Postg
 -   [Installation](#installation)
     -   [Prerequisites](#Prerequisites)
     -   [Development](#Development)
--   [Usage](#usage)
 
 ## Installation
 
@@ -16,7 +15,9 @@ Graphql API for puzzle challenge developed with Typescript, Node, GraphQL, Postg
 To be able to run this application you must need to install Node.js 12.0.0 or
 newer. Additionally, You must specify several enviroment variables to be able
 to connect to your PostgreSQL database. (This credentials can be found in your console).
-Also the secret key to build the Json Web Token authentication
+Also the secret key to build the Json Web Token authentication for authentication.
+If you want the API to send emails after a registration, you must provide the gmail address and
+password, also you must to enable less secure application configuration in your gmail account.
 
 ```
 RDS_HOSTNAME=
@@ -25,6 +26,8 @@ RDS_DB_NAME=
 RDS_USERNAME=
 RDS_PASSWORD=
 SECRET_KEY=
+EMAIL_USER=
+EMAIL_PASSWORD=
 ```
 
 ### Development
