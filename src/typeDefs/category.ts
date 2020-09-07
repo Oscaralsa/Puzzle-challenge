@@ -2,8 +2,8 @@ import { gql } from 'apollo-server-express';
 
 export = gql`
   extend type Query {  
-    getCategories(page: Int, limit: Int): [Category!]
-    getOneCategory(id: ID!): Category
+    getCategories(page: Int, limit: Int, name: String, nameRecipe: String, idRecipe: ID): [Category!]
+    getOneCategory(id: ID, name: String, nameRecipe: String, idRecipe: ID): Category
   }
 
   input createCategoryInput {
@@ -23,7 +23,7 @@ export = gql`
   type Category {
     id: ID!
     name: String!
-    recipe: Recipe!
+    recipe: [Recipe!]
   }
 
   extend type Subscription {

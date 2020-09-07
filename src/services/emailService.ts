@@ -3,6 +3,7 @@ import * as nodemailer from "nodemailer";
 import { emailTemplate } from "../utils/emailTemplate";
 import { UserEntity } from "../database/entity/user.entity";
 import helpers from "../helper/helpers";
+import { mailOptions } from "../types/interface";
 
 class Mail {
   constructor(
@@ -12,11 +13,11 @@ class Mail {
   ) {}
 
   sendMail() {
-    let mailOptions = {
+    let mailOptions: mailOptions = {
       from: "no-reply@thepuzzle.digital",
-      to: this.to,
-      subject: this.subject,
-      html: this.message,
+      to: this.to!,
+      subject: this.subject!,
+      html: this.message!,
     };
 
     const transporter = nodemailer.createTransport({
@@ -40,14 +41,14 @@ class Mail {
 }
 
 export async function registerEmail(userCreated: UserEntity) {
-  const subject: string = "You're email is almost signed in out platform.";
+  const subject: string = "You're account is now signed in our platform.";
   const message: string = emailTemplate(
     userCreated.email,
     userCreated.name,
     helpers.getCurrentDate().Day,
     helpers.getCurrentDate().Hour,
     "User Registered.",
-    "Your email has been registered in our platform, please check the indications.",
+    "Your email has been registered in our platform, now you can use our services!.",
     false,
     ""
   );

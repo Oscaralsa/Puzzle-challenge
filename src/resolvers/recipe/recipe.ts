@@ -1,5 +1,5 @@
 import { IResolvers } from 'apollo-server-express';
-import { getConnection, Repository } from 'typeorm';
+import { getConnection, Repository, SelectQueryBuilder } from 'typeorm';
 
 import { isAuthenticated } from "../../middleware";
 import { getResult } from "../../helper/helpers/helpers";
@@ -8,25 +8,34 @@ import { UserEntity } from "../../database/entity/user.entity";
 import PubSub from "../../subscription";
 import { User_RecipeEntity } from '../../database/entity/user_recipe.entity';
 import { CategoryEntity } from '../../database/entity/category.entity';
-import { Context } from '../../types/interface';
+import { Context, getOneRecipeInput, getRecipesInput } from '../../types/interface';
 import { recipeEvents } from "../../subscription/events/recipe";
 
 const resolvers: IResolvers = {
   Query: {
-    getRecipes: async (_: any, { page, limit }: { page: number, limit: number }, context: Context) => {
+    getRecipes: async (_: any, input: getRecipesInput, context: Context) => {
       try {
         //Middlewares
         isAuthenticated(context);
 
+        //Destructuring
+        let { page, limit, name, ingredients, idCategory, nameCategory } = input;
+
         //Define cursor
         let cursor: number = (page * limit) - limit;
         if (!cursor) cursor = 0;
+        
         //Create user repository
         let recipeRepository: Repository<RecipeEntity> = getConnection().getRepository(RecipeEntity);
-        let recipe: RecipeEntity[] = await recipeRepository.createQueryBuilder("recipe").innerJoinAndSelect("recipe.category", "category")
-          .skip(cursor).take(limit).getMany();
+        let recipe: SelectQueryBuilder<RecipeEntity> = recipeRepository.createQueryBuilder("recipe").innerJoinAndSelect("recipe.category", "category")
+          .skip(cursor).take(limit);
 
-        return recipe;
+        if(name) recipe = recipe.andWhere(`recipe.name = '${name}'`);
+        if(ingredients) recipe = recipe.andWhere(`recipe.ingredients = '${ingredients}'`);
+        if(idCategory) recipe = recipe.andWhere(`category.id = ${idCategory}`);
+        if(nameCategory) recipe = recipe.andWhere(`category.name = '${nameCategory}'`);
+
+        return recipe.getMany();
 
       } catch (err) {
         throw new Error(err);
@@ -45,7 +54,7 @@ const resolvers: IResolvers = {
         let cursor: number = (page * limit) - limit;
         if (!cursor) cursor = 0;
 
-        //Create recipes
+        //Return recipes
         let recipes: RecipeEntity[] = await getConnection().createQueryBuilder(RecipeEntity, "recipe")
           .innerJoin(User_RecipeEntity, "user_recipe", "recipe.id = user_recipe.id_recipe")
           .innerJoin(UserEntity, "user", "user_recipe.id_user = user.id").where(`user.id = ${loggedInUserId}`).skip(cursor).take(limit).getMany();
@@ -58,15 +67,28 @@ const resolvers: IResolvers = {
 
     },
 
-    getOneRecipe: async (_: any, { id }: { id: number }, context: Context) => {
+    getOneRecipe: async (_: any, input: getOneRecipeInput, context: Context) => {
       try {
         //Middlewares
         isAuthenticated(context);
 
+        //Destructuring
+        let { id, name, ingredients, idCategory, nameCategory } = input;
+
         //Create user repository
         let recipeRepository: Repository<RecipeEntity> = getConnection().getRepository(RecipeEntity);
 
-        return await recipeRepository.findOne({ id });
+        let recipe: SelectQueryBuilder<RecipeEntity> = recipeRepository.createQueryBuilder("recipe").innerJoin("recipe.category", "category")
+        .select("recipe");
+        
+        if(id) recipe = recipe.andWhere(`recipe.id = ${id}`);
+        if(name) recipe = recipe.andWhere(`recipe.name = '${name}'`);
+        if(ingredients) recipe = recipe.andWhere(`recipe.ingredients = '${ingredients}'`);
+        if(idCategory) recipe = recipe.andWhere(`category.id = ${idCategory}`);
+        if(nameCategory) recipe = recipe.andWhere(`category.name = '${nameCategory}'`);
+
+        return await recipe.getOne();
+
       } catch (err) {
         throw new Error(err)
       }
@@ -159,7 +181,7 @@ const resolvers: IResolvers = {
         //Search user
         const recipeToRemove: RecipeEntity[] = await recipeRepository.find({ where: { id }, take: 1 });
         const relationToRemove: User_RecipeEntity[] = await user_recipeRepository.find({ where: { id_recipe: id }, take: 1 });
-        const recipeRemoved = getResult(recipeToRemove);
+        const recipeRemoved: RecipeEntity = getResult(recipeToRemove);
 
         //Delete task
         await user_recipeRepository.remove(getResult(relationToRemove));
