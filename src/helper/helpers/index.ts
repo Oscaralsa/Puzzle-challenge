@@ -1,3 +1,3 @@
-import { getResult, getCurrentDate } from "./helpers";
+import { getCurrentDate, checkEmail } from "./helpers";
 
-export = { getResult, getCurrentDate };
+export = { checkEmail, getCurrentDate };

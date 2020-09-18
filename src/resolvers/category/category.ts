@@ -4,7 +4,6 @@ import { isAuthenticated } from "../../middleware";
 import PubSub from "../../subscription";
 import { RecipeEntity } from "../../database/entity/recipe.entity";
 import { CategoryEntity } from "../../database/entity/category.entity";
-import { getResult } from "../../helper/helpers/helpers";
 import { Context, updateCategoryInput, createCategoryInput, getCategoriesInput, getOneCategoryInput } from '../../types/interface';
 import { categoryEvents } from "../../subscription/events/category";
 
@@ -53,6 +52,7 @@ export = {
         let category: SelectQueryBuilder<CategoryEntity> =  categoryRepository.createQueryBuilder("category")
         .innerJoin("category.recipe", "recipe").select("category");
 
+        if(id) category = category.andWhere(`category.id = '${id}'`);
         if(name) category = category.andWhere(`category.name = '${name}'`);
         if(nameRecipe) category = category.andWhere(`recipe.name = '${nameRecipe}'`);
         if(idRecipe) category = category.andWhere(`recipe.id = ${idRecipe}`);
@@ -69,6 +69,9 @@ export = {
       try {
         //Middlewares
         isAuthenticated(context);
+
+        //Check input
+        if(!input.name) throw new Error(`Name is required.`)
 
         //Create category repository
         let categoryRepository: Repository<CategoryEntity> = getConnection().getRepository(CategoryEntity);
@@ -97,15 +100,11 @@ export = {
         let categoryRepository: Repository<CategoryEntity> = getConnection().getRepository(CategoryEntity);
 
         //Search category
-        const category: CategoryEntity[] = await categoryRepository.find({ where: { id }, take: 1 });
-        const categoryToUpdate: CategoryEntity = getResult(category)
-        categoryToUpdate.name = input.name;
+        const categoryToUpdate: CategoryEntity | undefined = await categoryRepository.findOne({ where: { id } });
+        categoryToUpdate ? categoryToUpdate.name = input.name : "";
 
-        //Update category
-        const Category: CategoryEntity = await categoryRepository.save(categoryToUpdate);
-
-
-        return Category;
+        //Return th update, if exist
+        return categoryToUpdate ? await categoryRepository.save(categoryToUpdate) : new Error("Category not found");
 
       } catch (err) {
         throw new Error(err)
@@ -122,12 +121,15 @@ export = {
         let categoryRepository = getConnection().getRepository(CategoryEntity);
 
         //Search user
-        const category: CategoryEntity[] = await categoryRepository.find({ where: { id }, take: 1 });
-        const categoryToRemove: CategoryEntity = getResult(category);
+        const categoryToRemove: CategoryEntity | undefined = await categoryRepository.findOne({ where: { id } });
 
+        if(categoryToRemove){
         //Delete task
         await categoryRepository.remove(categoryToRemove);
         categoryToRemove.id = id;
+        } else {
+          throw new Error("Category not found.");
+        }
 
         return categoryToRemove;
 

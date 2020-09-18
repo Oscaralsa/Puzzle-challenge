@@ -11,7 +11,6 @@ export = gql`
     name: String!
     description: String!
     ingredients: String!
-    userId: ID!
     categoryId: ID!
   }
 

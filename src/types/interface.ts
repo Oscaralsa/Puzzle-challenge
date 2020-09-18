@@ -55,3 +55,23 @@ export interface updateCategoryInput {
 export interface createCategoryInput {
   name: string;
 }
+
+export interface signUpInput {
+  email: string;
+  name: string;
+  password: string;
+}
+
+export interface updateRecipeInput {
+  name: string
+  description: string
+  ingredients: string
+  category: number
+}
+
+export interface createRecipeInput {
+  name: string
+  description: string
+  ingredients: string
+  categoryId: number
+}

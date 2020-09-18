@@ -2,14 +2,14 @@ import bcrypt from 'bcryptjs';
 import { AuthenticationError } from 'apollo-server-express';
 import { getConnection, Repository } from 'typeorm';
 
-import { getResult } from "../../helper/helpers/helpers";
+import { checkEmail } from "../../helper/helpers/helpers";
 import { UserEntity } from "../../database/entity/user.entity";
 import { RecipeEntity } from "../../database/entity/recipe.entity";
 import { createAccessToken, createRefreshToken } from "../../services/jwtService";
 import { isAuthenticated } from "../../middleware";
 import PubSub from "../../subscription";
 import { userEvents } from "../../subscription/events/user";
-import { Context } from '../../types/interface';
+import { Context, signUpInput } from '../../types/interface';
 import { registerEmail } from "../../services/emailService";
 
 export = {
@@ -19,10 +19,14 @@ export = {
         //Middlewares
         isAuthenticated(context);
 
+        //Input validation
+        if(!id) {
+          throw new Error("Id is required")
+        }  
+
         //Create user repository
         let userRepository: Repository<UserEntity> = getConnection().getRepository(UserEntity);
-        const users: UserEntity[] = await userRepository.find({ where: { id }, take:1 });
-        const user: UserEntity = getResult(users);
+        const user: UserEntity | undefined = await userRepository.findOne({ where: { id } });
 
         if (!user) {
           throw new Error("User not found");
@@ -45,8 +49,7 @@ export = {
         
         //Create user repository
         let userRepository: Repository<UserEntity> = getConnection().getRepository(UserEntity);
-        const users: UserEntity[] = await userRepository.find({ where: { email }, take:1 });
-        const user: UserEntity = getResult(users);
+        const user: UserEntity | undefined = await userRepository.findOne({ where: { email } });
 
         if (!user) {
           throw new Error("User not found");
@@ -62,14 +65,21 @@ export = {
     },
   },
   Mutation: {
-    signup: async (_: any, { input }: { input: any }) => {
+    signup: async (_: any, { input }: { input: signUpInput }) => {
       try {
         //Create user repository
         let userRepository: Repository<UserEntity> = getConnection().getRepository(UserEntity);
 
+        //Check inputs
+        if(!checkEmail(input.email)){
+          throw new Error("Email invalid")
+        } else if(!input.name){
+          throw new Error("Missing name")
+        } else if (!input.password) throw new Error("Missing password")
+        
+
         //Check if user is already registered
-        const users: UserEntity[] = await userRepository.find({ where: { email: input.email }, take: 1 })
-        const user: UserEntity = getResult(users);
+        const user: UserEntity | undefined = await userRepository.findOne({ where: { email: input.email } })
 
         if (user) {
           throw new Error("Email already in use")
@@ -104,8 +114,7 @@ export = {
         //Create user repository
         let userRepository: Repository<UserEntity> = getConnection().getRepository(UserEntity);
 
-        const users: UserEntity[] = await userRepository.find({ where: { email: input.email }, take: 1 })
-        const user: UserEntity = getResult(users);
+        const user: UserEntity | undefined = await userRepository.findOne({ where: { email: input.email } })
 
         if (!user) {
           throw new AuthenticationError("User not found")
@@ -139,9 +148,9 @@ export = {
         let recipeRepository: Repository<RecipeEntity> = getConnection().getRepository(RecipeEntity);
         let userRepository: Repository<UserEntity> = getConnection().getRepository(UserEntity);
 
-        const user: UserEntity[] = await userRepository.find({ where: { id }, take: 1 });
+        const user: UserEntity | undefined = await userRepository.findOne({ where: { id } });
 
-        const recipe = await recipeRepository.find({ user: getResult(user) });
+        const recipe: RecipeEntity[] = await recipeRepository.find({ user: user });
 
         return recipe;
       } catch (err) {

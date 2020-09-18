@@ -1,11 +1,3 @@
-export function getResult(entity: any[]) {
-  try {
-    return entity[0];
-  } catch (err) {
-    throw new Error("Return null")
-  }
-}
-
 export function getCurrentDate() {
   let today = new Date();
   let dd = String(today.getDate()).padStart(2, "0");
@@ -19,4 +11,10 @@ export function getCurrentDate() {
   let Day = mm + "/" + dd + "/" + yyyy;
 
   return {Hour, Day}
+}
+
+export function checkEmail(email: string) {
+  const emailRegexp = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+
+  return (emailRegexp.test(email))
 }
