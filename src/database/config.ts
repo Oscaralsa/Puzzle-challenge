@@ -10,7 +10,8 @@ dotenv.config();
 
 const connection: Promise<any> = createConnection({
   type: "postgres",
-  url: process.env.RDS_URI,
+  entities,
+  url: process.env.DATABASE_URL,
   /* If you have a external database
     host: process.env.RDS_HOSTNAME!,
     port: portNumber!,
@@ -18,7 +19,6 @@ const connection: Promise<any> = createConnection({
     password: process.env.RDS_PASSWORD!,
     database: process.env.RDS_DB_NAME!,
   */
-  entities,
   ssl: {
     rejectUnauthorized: false
   },
