@@ -18,10 +18,10 @@ const connection: Promise<any> = createConnection({
     password: process.env.RDS_PASSWORD!,
     database: process.env.RDS_DB_NAME!,
   */
+  entities,
   ssl: {
     rejectUnauthorized: false
   },
-  entities,
   synchronize: true,
   logging: false
 })
