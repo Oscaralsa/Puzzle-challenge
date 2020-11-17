@@ -14,8 +14,9 @@ Graphql API for puzzle challenge developed with Typescript, Node, GraphQL, Postg
 ### Prerequisites
 
 To be able to run this application you must need to install Node.js 12.0.0 or
-newer. Additionally, You must specify several enviroment variables to be able
-to connect to your PostgreSQL database. (This credentials can be found in your console).
+newer. Additionally, if you want to connect to an external database, you must specify 
+several enviroment variables to be able to connect to your PostgreSQL database, if you want 
+to connect to heroku postgres, use the DATABASE_URL env var. (This credentials can be found in your console).
 Also the secret key to build the Json Web Token authentication for authentication.
 If you want the API to send emails after a registration, you must provide the gmail address and
 password, also you must to enable less secure application configuration in your gmail account.
