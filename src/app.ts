@@ -48,4 +48,3 @@ export const apolloServer = new ApolloServer({
   introspection: true,
   playground: true,
 })
-
